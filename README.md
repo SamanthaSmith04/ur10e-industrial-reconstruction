@@ -33,3 +33,6 @@ source install/setup.bash
 ```bash
 ros2 launch ur10_support start.launch.xml
 ```
+
+### Running Industrial Reconstruction
+[Industrial Reconstruction Repo](https://github.com/ros-industrial/industrial_reconstruction)
