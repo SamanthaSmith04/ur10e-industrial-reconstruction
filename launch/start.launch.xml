@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="verbose" default="True"/>
+  <arg name="robot_description_file" default="$(find-pkg-share ur10e_support)/urdf/workcell.xacro"/>
+  <arg name="ur_type" default="ur10e"/>
+  <arg name="camera_calibration_file" default="$(find-pkg-share ur10e_support)/config/camera_calib.yaml"/>
+
+
+  <!-- UR URDF arguments -->
+  <arg name="controllers_file" default="$(find-pkg-share ur10e_support)/config/controllers.yaml"/>
+
+  <arg name="robot_ip" default="192.168.56.101"/> <!-- NOTE: These will need to be updated for the specific robot setup! -->
+  <arg name="reverse_ip" default="192.168.56.1"/>
+
+  <arg name="robot_description" default="$(command 'xacro $(var robot_description_file)
+  name:=$(var ur_type)
+  tf_prefix:=
+  robot_ip:=$(var robot_ip)
+  reverse_ip:=$(var reverse_ip)
+  camera_calibration_file:=$(var camera_calibration_file)
+  ')"/>
+
+  <!-- URDF, Rviz -->
+  <include file="$(find-pkg-share ur10e_support)/launch/test.launch.xml">
+    <arg name="robot_description" value="$(var robot_description)"/>
+    <arg name="rviz" value="False"/>
+  </include>
+
+  <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share ur10e_support)/config/rviz_config.rviz" output="screen">
+    <param name="robot_description" value="$(var robot_description)"/>
+
+    <!-- Industrial Reconstruction parameters -->
+    <param name="ir.tsdf.min.x" value="-1.0"/>
+    <param name="ir.tsdf.min.y" value="0.0"/>
+    <param name="ir.tsdf.min.z" value="-0.7"/>
+    <param name="ir.tsdf.max.x" value="1.0"/>
+    <param name="ir.tsdf.max.y" value="2.0"/>
+    <param name="ir.tsdf.max.z" value="2.0"/>
+    <param name="ir.tsdf.voxel_length" value="0.003"/>
+    <param name="ir.tsdf.sdf_trunc" value="0.015"/>
+    <param name="ir.rgbd.depth_scale" value="1000.0"/>
+    <param name="ir.rgbd.depth_trunc" value="0.9"/>
+    <param name="ir.live" value="true"/>
+    <param name="ir.min_faces" value="3000"/>
+    <param name="ir.normal_angle_tol" value="90.0"/>
+    <param name="ir.normal_x" value="0.0"/>
+    <param name="ir.normal_y" value="0.0"/>
+    <param name="ir.normal_z" value="1.0"/>
+    <param name="ir.archive_dir" value=""/>
+  </node>
+
+  <!-- Launch Open3d Interface Node -->
+  <node pkg="industrial_reconstruction" exec="industrial_reconstruction">
+    <param name="depth_image_topic" value="/camera/depth/image_raw"/>
+    <param name="color_image_topic" value="/camera/color/image_raw"/>
+    <param name="camera_info_topic" value="/camera/depth/camera_info"/>
+    <param name="cache_count" value="1"/>
+    <param name="slop" value="0.05"/>
+  </node>
+
+
+  <include file="$(find-pkg-share orbbec_camera)/launch/gemini_330_series.launch.py">
+    <arg name="depth_registration" value="true"/>
+    <arg name="enable_point_cloud" value="true"/>
+    <arg name="enable_colored_point_cloud" value="true"/>
+    <arg name="color_width" value="1920"/>
+    <arg name="color_height" value="1080"/>
+    <arg name="color_fps" value="10"/>
+    <arg name="depth_width" value="1280"/>
+    <arg name="depth_height" value="800"/>
+    <arg name="depth_fps" value="10"/>
+    <arg name="publish_tf" value="false"/>
+  </include>
+
+  <!-- ROS2 control -->
+  <include file="$(find-pkg-share ur10e_support)/launch/ros2_control.launch.py">
+    <arg name="robot_description" value="$(var robot_description)"/>
+    <arg name="controllers_file" value="$(var controllers_file)"/>
+  </include>
+  
+</launch>
+
+

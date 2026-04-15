@@ -1,0 +1,9 @@
+repositories:
+    ur_description:
+        type: git
+        url: https://github.com/UniversalRobots/Universal_Robots_ROS2_Description.git
+        version: humble
+    orbbec_skd_ros2:
+        type: git
+        url: https://github.com/orbbec/OrbbecSDK_ROS2.git
+        version: v2.4.5

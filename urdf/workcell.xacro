@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<robot name="ur10e_macro" xmlns:xacro="http://ros.org/wiki/xacro" xmlns:tesseract="https://github.com/tesseract-robotics/tesseract" tesseract:make_convex="true">
+  <xacro:include filename="$(find ur10e_support)/urdf/smw_workcell.xacro" />
+  <xacro:ur10e_macro />
+
+  <xacro:include filename="$(find ur10e_support)/urdf/ros2_control.xacro"/>
+  <xacro:snp_ros2_control name="SNP ROS2 Control" prefix=""/>
+
+  
+</robot>
