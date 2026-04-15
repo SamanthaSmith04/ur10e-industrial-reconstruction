@@ -22,6 +22,12 @@ vcs import src < src/ur10e-industrial-reconstruction/dependencies.repos
 ```
 
 ```bash
+python3 -m venv venv --system-site-packages
+
+pip install open3d
+```
+
+```bash
 colcon build
 ```
 
@@ -31,7 +37,7 @@ source install/setup.bash
 
 ## Running Support Package
 ```bash
-ros2 launch ur10_support start.launch.xml
+ros2 launch ur10e_support start.launch.xml
 ```
 
 ### Running Industrial Reconstruction
