@@ -15,6 +15,7 @@ find_package(rclcpp REQUIRED)
 find_package(ros_industrial_cmake_boilerplate REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(ur_description REQUIRED)
+find_package(ur_robot_driver REQUIRED)
 
 install(
   DIRECTORY launch

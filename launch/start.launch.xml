@@ -9,16 +9,15 @@
   <!-- UR URDF arguments -->
   <arg name="controllers_file" default="$(find-pkg-share ur10e_support)/config/controllers.yaml"/>
 
-  <arg name="robot_ip" default="192.168.56.101"/> <!-- NOTE: These will need to be updated for the specific robot setup! -->
-  <arg name="reverse_ip" default="192.168.56.1"/>
+  <arg name="robot_ip" default="192.168.1.101"/> <!-- NOTE: These will need to be updated for the specific robot setup! -->
+  <arg name="reverse_ip" default="192.168.1.1"/>
 
-  <arg name="robot_description" default="$(command 'xacro $(var robot_description_file)
-  name:=$(var ur_type)
-  tf_prefix:=
-  robot_ip:=$(var robot_ip)
-  reverse_ip:=$(var reverse_ip)
-  camera_calibration_file:=$(var camera_calibration_file)
-  ')"/>
+ 
+  <arg name="script_filename" default="$(find-pkg-share ur_client_library)/resources/external_control.urscript"/>
+  <arg name="output_recipe_filename" default="$(find-pkg-share ur_robot_driver)/resources/rtde_output_recipe.txt"/>
+  <arg name="input_recipe_filename" default="$(find-pkg-share ur_robot_driver)/resources/rtde_input_recipe.txt"/> 
+
+  <arg name="robot_description" default="$(command 'xacro $(var robot_description_file) robot_ip:=$(var robot_ip)')"/>
 
   <!-- URDF, Rviz -->
   <include file="$(find-pkg-share ur10e_support)/launch/test.launch.xml">
@@ -30,7 +29,7 @@
     <param name="robot_description" value="$(var robot_description)"/>
 
     <!-- Industrial Reconstruction parameters -->
-    <param name="ir.tsdf.min.x" value="-1.0"/>
+    <!-- <param name="ir.tsdf.min.x" value="-1.0"/>
     <param name="ir.tsdf.min.y" value="0.0"/>
     <param name="ir.tsdf.min.z" value="-0.7"/>
     <param name="ir.tsdf.max.x" value="1.0"/>
@@ -46,7 +45,7 @@
     <param name="ir.normal_x" value="0.0"/>
     <param name="ir.normal_y" value="0.0"/>
     <param name="ir.normal_z" value="1.0"/>
-    <param name="ir.archive_dir" value=""/>
+    <param name="ir.archive_dir" value=""/> -->
   </node>
 
   <!-- Launch Open3d Interface Node -->

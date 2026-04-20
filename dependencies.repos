@@ -2,9 +2,13 @@ repositories:
     ur_description:
         type: git
         url: https://github.com/UniversalRobots/Universal_Robots_ROS2_Description.git
-        version: humble
+        version: jazzy
     industrial_reconstruction:
         type: git
         url: https://github.com/ros-industrial/industrial_reconstruction
         version: main
+    industrial_calibration:
+        type: git
+        url: https://github.com/ros-industrial/industrial_calibration_ros2.git
+        version: master
 

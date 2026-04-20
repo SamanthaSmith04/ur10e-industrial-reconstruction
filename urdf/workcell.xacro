@@ -3,8 +3,8 @@
   <xacro:include filename="$(find ur10e_support)/urdf/smw_workcell.xacro" />
   <xacro:ur10e_macro />
 
-  <xacro:include filename="$(find ur10e_support)/urdf/ros2_control.xacro"/>
-  <xacro:snp_ros2_control name="SNP ROS2 Control" prefix=""/>
+  <!-- <xacro:include filename="$(find ur10e_support)/urdf/ros2_control.xacro"/> -->
+  <!-- <xacro:ur10e_ros2_control name="UR10e_ROS2_Control" prefix=""/> -->
 
   
 </robot>
