@@ -17,7 +17,7 @@
   <arg name="output_recipe_filename" default="$(find-pkg-share ur_robot_driver)/resources/rtde_output_recipe.txt"/>
   <arg name="input_recipe_filename" default="$(find-pkg-share ur_robot_driver)/resources/rtde_input_recipe.txt"/> 
 
-  <arg name="robot_description" default="$(command 'xacro $(var robot_description_file) robot_ip:=$(var robot_ip)')"/>
+  <arg name="robot_description" default="$(command 'xacro $(var robot_description_file) robot_ip:=$(var robot_ip) camera_calibration_file:=$(var camera_calibration_file)')"/>
 
   <!-- URDF, Rviz -->
   <include file="$(find-pkg-share ur10e_support)/launch/test.launch.xml">

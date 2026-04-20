@@ -1,0 +1,8 @@
+# ChArUco grid target finder
+target_finder:
+  type: CharucoGridTargetFinder
+  rows: 9
+  cols: 12
+  chessboard_dim: 0.03
+  aruco_marker_dim: 0.022
+  dictionary: 5 # DICT_5x5x100

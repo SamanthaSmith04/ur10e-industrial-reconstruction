@@ -145,7 +145,7 @@
       <child link="spray_tcp"/>
     </joint>
 
-  <!-- <xacro:property name="camera_calibration_file" default="$(arg camera_calibration_file)"/>
+  <xacro:property name="camera_calibration_file" default="$(arg camera_calibration_file)"/>
   <xacro:property name="camera_cal" value="${xacro.load_yaml(camera_calibration_file)}" />
   <link name="camera_color_optical_frame"/>
   <joint name="spray_to_camera" type="fixed">
@@ -153,15 +153,15 @@
     <child link="camera_color_optical_frame"/>
     <origin xyz="${camera_cal['camera_mount_to_camera_pos']['x']} ${camera_cal['camera_mount_to_camera_pos']['y']} ${camera_cal['camera_mount_to_camera_pos']['z']}"
             rpy="${camera_cal['camera_mount_to_camera_rpy']['x']} ${camera_cal['camera_mount_to_camera_rpy']['y']} ${camera_cal['camera_mount_to_camera_rpy']['z']}" />
-  </joint> -->
+  </joint>
 
-  <!-- <link name="cal_target_frame"/>
+  <link name="cal_target_frame"/>
   <joint name="target_mount_to_target" type="fixed">
     <parent link="base_link"/>
     <child link="cal_target_frame"/>
     <origin xyz="${camera_cal['target_mount_to_target_pos']['x']} ${camera_cal['target_mount_to_target_pos']['y']} ${camera_cal['target_mount_to_target_pos']['z']}"
             rpy="${camera_cal['target_mount_to_target_rpy']['x']} ${camera_cal['target_mount_to_target_rpy']['y']} ${camera_cal['target_mount_to_target_rpy']['z']}" />
-  </joint> -->
+  </joint>
 
     <!-- EOAT camera_tcp TCP -->
     <link name="camera_tcp"/>
