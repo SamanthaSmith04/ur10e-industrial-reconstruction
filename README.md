@@ -22,6 +22,10 @@ vcs import src < src/ur10e-industrial-reconstruction/dependencies.repos
 ```
 
 ```bash
+vcs import src < src/industrial_calibration_ros/dependencies.repos
+```
+
+```bash
 python3 -m venv venv --system-site-packages
 
 source venv/bin/activate
