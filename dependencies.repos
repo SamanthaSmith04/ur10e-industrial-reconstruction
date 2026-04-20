@@ -7,7 +7,7 @@ repositories:
         type: git
         url: https://github.com/ros-industrial/industrial_reconstruction
         version: main
-    industrial_calibration:
+    industrial_calibration_ros:
         type: git
         url: https://github.com/ros-industrial/industrial_calibration_ros2.git
         version: master
