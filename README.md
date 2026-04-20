@@ -24,6 +24,8 @@ vcs import src < src/ur10e-industrial-reconstruction/dependencies.repos
 ```bash
 python3 -m venv venv --system-site-packages
 
+source venv/bin/activate
+
 pip install open3d
 ```
 
