@@ -34,7 +34,7 @@ pip install open3d
 ```
 
 ```bash
-colcon build
+python3 -m colcon build
 ```
 
 ```bash
