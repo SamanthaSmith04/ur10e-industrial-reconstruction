@@ -47,6 +47,13 @@ ros2 launch ur10e_support start.launch.xml
 ```
 
 ### Running Industrial Calibration
+
+There are 3 parts to calibration:
+- **Data Collection**: Collecting image and robot position data to use for calibration
+- **Intrinsic Calibration**: The properties of the camera and how these map to the 2d image (ex. focal length). The Orbbec cameras actually publish these values, which makes the process very easy!
+- **Extrinsic Calibration**: Used to determine the exact location of the camera, relative to the robot and how the 2D points from the image map to a 3D position in space relative to the `world` frame.
+
+#### Data Collection
 This should only need to be done for the first time the camera is used / when the environment changes.
 `ros2 launch industrial_calibration_ros data_collection.launch.xml config_file:=~/ros2_ws/src/ur10e-industrial-reconstruction/config/target_detector_config.yaml`
 
@@ -61,7 +68,21 @@ What are good images?
 - Majority of markers are visible to the camera (the blue dots in the image view `/annotated_image`)
 - Lighting conditions are similar to useage environment
 
-These images are used in addition to the position data of end of the robot `tool0` at the time of each image to locate the aruco marker positions in space relative to the `world` frame from the camera data (2D color feed and depth map)
+These images are used in addition to the position data of end of the robot `tool0` at the time of each image to locate the aruco marker positions in space relative to the `world` frame from the camera data (2D color feed and depth map) to perform the Extrinsic calibration.
+
+#### Intrinsic Calibration
+Since the Orbbec camera publishes the intrinsic info, it can easily be pulled from the ros topic `/camera/color/camera_info`. This will list a few parameters for the camera, we will be looking at `k`. More information on what this parameter is encoding can be found [here](https://ksimek.github.io/2013/08/13/intrinsic/). The information is laid out as an array, but `k` represents a 3x3 matrix:
+
+$$ k =
+\begin{bmatrix}
+f_x & 0 & c_x \\
+0 & f_y & c_y \\
+0 & 0 & 1
+\end{bmatrix}
+$$
+
+
+#### Extrinsic Calibration
 
 ### Running Industrial Reconstruction
 [Industrial Reconstruction Repo](https://github.com/ros-industrial/industrial_reconstruction)
