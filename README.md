@@ -14,9 +14,14 @@ cd ~/ros2_ws/src
 
 Clone this repo into the `src` folder
 ```bash
+git clone https://github.com/SamanthaSmith04/ur10e-industrial-reconstruction.git
+```
+
+```bash
 cd ~/ros2_ws
 ```
 
+Import other dependencies found in other git repositories:
 ```bash
 vcs import src < src/ur10e-industrial-reconstruction/dependencies.repos
 ```
@@ -25,6 +30,7 @@ vcs import src < src/ur10e-industrial-reconstruction/dependencies.repos
 vcs import src < src/industrial_calibration_ros/dependencies.repos
 ```
 
+Set up a virtual environment to manage python packages:
 ```bash
 python3 -m venv venv --system-site-packages
 
@@ -33,6 +39,7 @@ source venv/bin/activate
 pip install open3d
 ```
 
+*Note: typically when you build a ROS workspace you will use `colcon build`, but since we are using a virtual environment, ROS sometimes doesn't use the correct python environment, since your ROS installation has its own python environment. To force it to use this one, we can run `colcon` with this command. As long as you have sourced your virtual environment, (`source venv/bin/activate`), it will pull the correct one.*
 ```bash
 python3 -m colcon build
 ```
@@ -56,7 +63,14 @@ There are 3 parts to calibration:
 #### Data Collection
 This should only need to be done for the first time the camera is used / when the environment changes.
 
-**Note: replace `<PATH_TO_YOUR_WORKSPACE>` with your workspace path**
+Since data collection also captures the position of the robot, we will need a node publishing the joint states. The support package for this repo does this for the UR10e. For another robot, you will need to ensure the robot ROS driver is running and properly publishing joint states.
+
+```bash
+ros2 launch ur10e_support start.launch.xml
+```
+
+Launching industrial calibration:
+**Note: replace `<PATH_TO_YOUR_WS>` with your workspace path**
 ```bash
 ros2 launch industrial_calibration_ros data_collection.launch.xml config_file:=<PATH_TO_YOUR_WS>/src/ur10e-industrial-reconstruction/config/target_detector_config.yaml`
 ```
@@ -65,7 +79,7 @@ This will launch RViz and provides displays for both data collection and extrins
 
 The `target_detector_config.yaml` file has the parameters for the 9x12 Charuco board at AIMS, but can be updated to match other boards as needed.
 
-For calibration, you will be collecting image data of the charuco board. The board will remain stationary on the table, it is very important that the board does not move while you are collecting this data (as well as the robot cart if it is not bolted to the ground). 
+For calibration, you will be collecting image data of the charuco board. The board will remain stationary on the table, **it is very important that the board does not move while you are collecting this data** (as well as the robot cart if it is not bolted to the ground). Later in the process you will need to measure both the distance and orientation of the calibration board relative to the base of the robot, so it is best to ensure the board is parallel to one of the axes of the `base_link` of the robot (you can view this in RViz under the `tf` Display widget, you may need to hide the RobotModel widget to be able to see this link).
 
 The buttons in the top right of the GUI are used for data collection, and it displays how many images have been taken so far. It is reccomended to have 15-20 good images of the charuco board.
 
@@ -77,6 +91,8 @@ What are good images?
 These images are used in addition to the position data of end of the robot `tool0` at the time of each image to locate the aruco marker positions in space relative to the `world` frame from the camera data (2D color feed and depth map) to perform the Extrinsic calibration.
 
 The data will be saved to the `/tmp/calibration` folder, it is important that you move this to another location if you wish to keep this data, since the `tmp` folder is temporary and will periodically be cleared.
+
+**DO NOT MOVE THE CALIBRATION BOARD YET!! You will need it in that position for later to measure how far it is from the robot.**
 
 #### Intrinsic Calibration
 Since the Orbbec camera publishes the intrinsic info, it can easily be pulled from the ros topic `/camera/color/camera_info`. This will list a few parameters for the camera, we will be looking at `k`. More information on what this parameter is encoding can be found [here](https://ksimek.github.io/2013/08/13/intrinsic/). The information is laid out as an array, but `k` represents a 3x3 matrix:
@@ -117,7 +133,7 @@ Extrinsic calibration can either be launched using:
 ros2 run industrial_calibration industrial_calibration_extrinsic_hand_eye_calibration_app
 ```
 
-OR, if the data collection launch is already running from before, it is also included in that.
+OR, if the data collection launch is already running from before, it is also included in that GUI.
 
 ##### Extrinsic Calibration Steps:
 1. Load observations
@@ -155,11 +171,62 @@ OR, if the data collection launch is already running from before, it is also inc
 7. Save calibration
 - Don't forget to hit save before closing the GUI!
 - This file can be saved to the `config` folder in this repo, or wherever you'd like to store your calibration data.
- 
+
+##### How is this calibration file used?
+In the launch file for this repository (`start.launch.xml`)
+
+We pass the configuration file to the robot description [here](https://github.com/SamanthaSmith04/ur10e-industrial-reconstruction/blob/a6234658b9a3db84291e4b8ce09819b92a2b9e9d/launch/start.launch.xml#L20) as a parameter. When xacro runs, it is converting the `.xacro` file we used to set up the urdf to a `.urdf` file, and parameters can be passed into this to control aspects of the urdf.
+```xml
+  <arg name="robot_description" default="$(command 'xacro $(var robot_description_file) robot_ip:=$(var robot_ip) camera_calibration_file:=$(var camera_calibration_file)')"/>
+```
+[This line](https://github.com/SamanthaSmith04/ur10e-industrial-reconstruction/blob/a6234658b9a3db84291e4b8ce09819b92a2b9e9d/urdf/smw_workcell.xacro#L47) sets up the parameter for the `.xacro` file, allowing it to recieve a `camera_calibration_file` parameter.
+```xml
+   <xacro:arg name="camera_calibration_file" default="" />
+```
+
+This parameter is then used [here](https://github.com/SamanthaSmith04/ur10e-industrial-reconstruction/blob/a6234658b9a3db84291e4b8ce09819b92a2b9e9d/urdf/smw_workcell.xacro#L148-L164). First the `.yaml` file is loaded in so it can be parsed. Then we pass in the specific fields from the yaml file to be used as the position of a new frame. This example creates two frames, one giving the exact position of the camera lens relative to `tool0` and the other giving the position of the top left corner of the calibration board relative to the base of the robot, `base_link`.
+
+```xml
+  <xacro:property name="camera_calibration_file" default="$(arg camera_calibration_file)"/>
+  <xacro:property name="camera_cal" value="${xacro.load_yaml(camera_calibration_file)}" />
+  <link name="camera_color_optical_frame"/>
+  <joint name="spray_to_camera" type="fixed">
+    <parent link="tool0"/>
+    <child link="camera_color_optical_frame"/>
+    <origin xyz="${camera_cal['camera_mount_to_camera_pos']['x']} ${camera_cal['camera_mount_to_camera_pos']['y']} ${camera_cal['camera_mount_to_camera_pos']['z']}"
+            rpy="${camera_cal['camera_mount_to_camera_rpy']['x']} ${camera_cal['camera_mount_to_camera_rpy']['y']} ${camera_cal['camera_mount_to_camera_rpy']['z']}" />
+  </joint>
+
+
+  <link name="cal_target_frame"/>
+  <joint name="target_mount_to_target" type="fixed">
+    <parent link="base_link"/>
+    <child link="cal_target_frame"/>
+    <origin xyz="${camera_cal['target_mount_to_target_pos']['x']} ${camera_cal['target_mount_to_target_pos']['y']} ${camera_cal['target_mount_to_target_pos']['z']}"
+            rpy="${camera_cal['target_mount_to_target_rpy']['x']} ${camera_cal['target_mount_to_target_rpy']['y']} ${camera_cal['target_mount_to_target_rpy']['z']}" />
+  </joint>
+```
+
+When the launch file loads in this URDF, it is a good idea to confirm in RViz that the positions look right. It is very important that `camera_color_optical_frame` looks right, since this is used for industrial reconstruction. `target_mount_to_target` is just used for debug purposes and is less important.
+
 
 ### Running Industrial Reconstruction
 [Industrial Reconstruction Repo](https://github.com/ros-industrial/industrial_reconstruction)
 
+The industrial reconstruction server is automatically launched in this support package:
+```bash
+ros2 launch ur10e_support start.launch.xml
+```
+
+The specific lines that are starting the service, and some of the set parameters are set up [here](https://github.com/SamanthaSmith04/ur10e-industrial-reconstruction/blob/a6234658b9a3db84291e4b8ce09819b92a2b9e9d/launch/start.launch.xml#L51-L58).
+
+
+Since the service is already running, we can start and stop reconstruction with the following service calls:
+
+
+The specific parameters can be updated to create a better reconstruction, the ones below are provided as examples. The parameters are explained in more detail in the [industrial reconstruction repository](https://github.com/ros-industrial/industrial_reconstruction).
+
+##### Start Reconstruction
 ```bash
 ros2 service call /start_reconstruction industrial_reconstruction_msgs/srv/StartReconstruction "tracking_frame: 'camera_color_optical_frame'
 relative_frame: 'world'
@@ -174,9 +241,15 @@ tsdf_params:
 rgbd_params: {depth_scale: 1000.0, depth_trunc: 0.75, convert_rgb_to_intensity: false}"
 ```
 
+This command starts the data collection, which will run until the stop command is sent.
+
+##### Stop Reconstruction
+*Note: replace `<PATH_TO_SAVE_TO>` (included 2 times) with the path that you want the file to save to*
 ```bash
-ros2 service call /stop_reconstruction industrial_reconstruction_msgs/srv/StopReconstruction "archive_directory: '~/Desktop'
-mesh_filepath: '~/Desktop/results_mesh.ply'
+ros2 service call /stop_reconstruction industrial_reconstruction_msgs/srv/StopReconstruction "archive_directory: '<PATH_TO_SAVE_TO>'
+mesh_filepath: '<PATH_TO_SAVE_TO>/results_mesh.ply'
 normal_filters: [{ normal_direction: {x: 0.0, y: 0.0, z: 1.0}, angle: 90}]
 min_num_faces: 1000"
 ```
+
+This command stops the data collection and saves the collected mesh to a `.ply` file.
